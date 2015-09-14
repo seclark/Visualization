@@ -1,3 +1,8 @@
+import colorsys
+import numpy as np
+import matplotlib as mpl
+import seaborn.apionly as sns
+
 def lic_plot(lic_data, background_data = None, F_m = 0.0, F_M = 0.0, cmap = "YlOrRd"):
 
     """
@@ -41,13 +46,14 @@ def lic_plot(lic_data, background_data = None, F_m = 0.0, F_M = 0.0, cmap = "YlO
     y, x = hues.shape
     
     # Map background data onto RGB colormap 
-    background_data_rbg = cmap(background_data)
+    cmap = mpl.colors.ListedColormap(sns.color_palette(cmap, 256))
+    background_data_rgb = cmap(background_data)
     
     # Only need RGB, not RGBA
     background_data_rgb = background_data_rgb[:, :, 0:3]
     
     # Map to Hue - Saturation - Value
-    hsv = matplotlib.colors.rgb_to_hsv(background_data_rgb)
+    hsv = mpl.colors.rgb_to_hsv(background_data_rgb)
     
     # to work in hls instead of hsv
     hs = hsv[:, :, 0].flatten()
