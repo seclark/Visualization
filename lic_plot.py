@@ -1,4 +1,18 @@
-def lic_plot(lic_data, background_data = None):
+def lic_plot(lic_data, background_data = None, F_m = 0.4, F_M = 0.37):
+
+    """
+    lic_data        :: output of LIC code
+    background_data :: background color map, e.g. density or vector magnitude
+    F_m             :: contrast enhancement parameter - see below
+    F_M             :: contrast enhancement parameter - see below
+    
+    Contrast Enhancement from http://www.paraview.org/Wiki/ParaView/Line_Integral_Convolution#Image_LIC_CE_stages
+    L_ij = (L_ij - m) / (M - m)
+    L = HSL lightness. m = lightness to map to 0. M = lightness to map to 1.
+    m = min(L) + F_m * (max(L) - min(L))
+    M = max(L) - F_M * (max(L) - min(L))
+    F_m and F_M take values between 0 and 1. Increase F_m -> darker colors. Increase F_M -> brighter colors.
+    """
 
     # 1. Compute nhi values
     # 2. Interpolate these values onto cmap to find corresponding RGBA value
@@ -6,8 +20,11 @@ def lic_plot(lic_data, background_data = None):
     # 4. Assign Lightness as lic amplitude
     # 5. Display HLS map.
     
-    hues = nhi / np.nanmax(nhi)
-    #hues = np.log10(nhi)/np.nanmax(np.log10(nhi))
+    # Normalize background data
+    if background_data == None:
+        background_data = np.ones(lic_data.shape)
+    hues = background_data / np.nanmax(background_data)
+    
     sats = np.ones(lic_rht.shape)
     licrhtmax = np.nanmax(lic_rht)
     licrhtmin = np.nanmin(lic_rht)
