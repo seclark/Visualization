@@ -17,11 +17,14 @@ import colorsys
 import matplotlib as mpl
 import matplotlib.colors as colors
 
-def maketestdata():
-    #path = "/Volumes/DataDavy/GALFA/DR2/FullSkyRHT/thetarht_maps/"
-    path = "/Volumes/DataDavy/GALFA/DR2/FullSkyRHT/QUmaps/"
-
-    nhidata_fn = "/Volumes/DataDavy/GALFA/DR2/NHIMaps/GALFA-HI_VLSR-036+0037kms_NHImap_noTcut.fits"
+def maketestdata(local=True):
+    if local is True:
+        path = "/Volumes/DataDavy/GALFA/DR2/FullSkyRHT/QUmaps/"
+        nhidata_fn = "/Volumes/DataDavy/GALFA/DR2/NHIMaps/GALFA-HI_VLSR-036+0037kms_NHImap_noTcut.fits"
+    else:
+        path = "/disks/jansky/a/users/goldston/susan/Wide_maps/QUmaps/"
+        nhidata_fn = "/disks/jansky/a/users/goldston/zheng/151019_NHImaps_SRcorr/data/GNHImaps/GALFA-HI_VLSR-036+0037kms_NHImap_noTcut.fits"
+    
     nhidata = fits.getdata(nhidata_fn)
 
     vstep = 0.736122839600 # CDELT3 of original Wide cube
@@ -252,5 +255,9 @@ def makemovie():
         plt.savefig("slicergb_test_bkgrnd_{}.png".format(t), dpi=100)
     
 
-
+if __name__ == "__main__":
+    all_ggs, mom1cube, nhidata = maketestdata(local = False)
+    blended_data = blendall(all_ggs)
+    
+    np.save("allsky_rgba_blended_test1.npy", blended_data)
 
