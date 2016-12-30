@@ -287,7 +287,7 @@ def makemovie():
 #    np.save("allsky_rgba_blended_test1.npy", blended_data)
 
 if __name__ == "__main__":
-    all_ggs, mom1cube, nhidata = maketestdata(local = False)
+    all_ggs, mom1cube, nhidata = maketestdata(local = False, smallpatch = False)
     blended_data = np.load("allsky_rgba_blended_test1.npy")
     
     nhinoz = copy.copy(nhidata)
