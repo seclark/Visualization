@@ -17,7 +17,7 @@ import colorsys
 import matplotlib as mpl
 import matplotlib.colors as colors
 
-def maketestdata(local=True):
+def maketestdata(local=True, smallpatch=True):
     if local is True:
         path = "/Volumes/DataDavy/GALFA/DR2/FullSkyRHT/QUmaps/"
         nhidata_fn = "/Volumes/DataDavy/GALFA/DR2/NHIMaps/GALFA-HI_VLSR-036+0037kms_NHImap_noTcut.fits"
@@ -31,10 +31,13 @@ def maketestdata(local=True):
     vstart = -35.4 # km/s vel of channel 0974
     vels = np.zeros(21, np.float_)
 
-    all_ggs = np.zeros((nhidata.shape[0], nhidata.shape[1], 21), np.float_)
-    mom1cube = np.zeros((nhidata.shape[0], nhidata.shape[1], 21), np.float_)
-    #all_ggs = np.zeros((2432, 2432, 21), np.float_)
-    #mom1cube = np.zeros((2432, 2432, 21), np.float_)
+    if smallpatch:
+        all_ggs = np.zeros((2432, 2432, 21), np.float_)
+        mom1cube = np.zeros((2432, 2432, 21), np.float_)        
+    else:
+        all_ggs = np.zeros((nhidata.shape[0], nhidata.shape[1], 21), np.float_)
+        mom1cube = np.zeros((nhidata.shape[0], nhidata.shape[1], 21), np.float_)
+
     all_ggs_big = copy.copy(all_ggs)
     mom1cube_big = copy.copy(mom1cube)
     
@@ -53,8 +56,12 @@ def maketestdata(local=True):
             numendstr = ""
     
         gg = fits.getdata(path + "intrht_GALFA_HI_allsky_chS"+numstartstr+str(numstart)+"_"+numendstr+str(numend)+"_w75_s15_t70.fits")
-    
-        all_ggs[:, :, i] = gg#[:, 0:2432]
+        
+        if smallpatch:
+            all_ggs[:, :, i] = gg[:, 0:2432]
+        else:
+            all_ggs[:, :, i] = gg
+            
         mom1cube[:, :, i] = all_ggs[:, :, i]*vels[i]
         
         #all_ggs_big_slice = copy.copy(all_ggs[:, :, i])
@@ -63,7 +70,8 @@ def maketestdata(local=True):
         #mom1cube_big[:, :, i] = all_ggs_big[:, :, i]*vels[i]
     
         # testing.
-        #nhidata = nhidata[:, 0:2432]
+        if smallpatch:
+            nhidata = nhidata[:, 0:2432]
         nhidata = nhidata/np.nanmax(nhidata)
     
     print(vels)    
@@ -74,6 +82,23 @@ def renormalize(data, minval, maxval):
     newdata = (maxval - minval) * ((data - np.nanmin(data)) / (np.nanmax(data) - np.nanmin(data))) + minval
     
     return newdata   
+    
+def painting_op(top, bottom):
+    """
+    over alg from https://en.wikipedia.org/wiki/Alpha_compositing
+    """
+    outRGBA = np.zeros(top.shape, np.float_)
+    
+    topA = top[:, :, 3]
+    bottomA = bottom[:, :, 3]
+    
+    for _rgba in xrange(4):
+        numerator = top[:, :, _rgba]*topA + bottom[:, :, _rgba]*bottomA*(1 - topA)
+        denom = topA + bottomA*(1 - topA)
+        
+        outRGBA[:, :, _rgba] = numerator/denom
+    
+    return outRGBA
     
 def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=100):
     cmap = plt.get_cmap(cmap)
@@ -255,9 +280,21 @@ def makemovie():
         plt.savefig("slicergb_test_bkgrnd_{}.png".format(t), dpi=100)
     
 
+#if __name__ == "__main__":
+#    all_ggs, mom1cube, nhidata = maketestdata(local = False)
+#    blended_data = blendall(all_ggs)
+#    
+#    np.save("allsky_rgba_blended_test1.npy", blended_data)
+
 if __name__ == "__main__":
     all_ggs, mom1cube, nhidata = maketestdata(local = False)
-    blended_data = blendall(all_ggs)
+    blended_data = np.load("allsky_rgba_blended_test1.npy")
     
-    np.save("allsky_rgba_blended_test1.npy", blended_data)
+    nhinoz = copy.copy(nhidata)
+    nhinoz[np.where(nhidata == 0)] = None
+    nhirgba = plt.cm.gray(nhinoz/np.nanmax(nhinoz))
+    
+    overc = painting_op(blended_data, nhirgba)
+    
+    np.save("allsky_rgba_blended_over_nhi_gray.npy", overc)
 
