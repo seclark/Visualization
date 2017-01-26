@@ -54,8 +54,11 @@ def maketestdata(local=True, smallpatch=True):
             numendstr = "0"
         else:
             numendstr = ""
-    
-        gg = fits.getdata(path + "S"+numstartstr+str(numstart)+"_"+numendstr+str(numend) + "/intrht_S"+numstartstr+str(numstart)+"_"+numendstr+str(numend)+".fits")
+        
+        if local:
+             gg = fits.getdata(path + "intrht_GALFA_HI_allsky_chS"+numstartstr+str(numstart)+"_"+numendstr+str(numend)+"_w75_s15_t70.fits")
+        else:
+            gg = fits.getdata(path + "S"+numstartstr+str(numstart)+"_"+numendstr+str(numend) + "/intrht_S"+numstartstr+str(numstart)+"_"+numendstr+str(numend)+".fits")
         
         if smallpatch:
             all_ggs[:, :, i] = gg[:, 0:2432]
@@ -278,13 +281,14 @@ def makemovie():
         plt.xticks([])
         plt.yticks([])
         plt.savefig("slicergb_test_bkgrnd_{}.png".format(t), dpi=100)
-    
-allskyvis = np.load('/Volumes/DataDavy/GALFA/DR2/DR2Vis/allsky_rgba_blended_over_nhi_gray.npy')
-nhidata_fn = "/Volumes/DataDavy/GALFA/DR2/NHIMaps/GALFA-HI_VLSR-036+0037kms_NHImap_noTcut.fits"
-nhi_hdr = fits.getheader(nhidata_fn)
-nhi_hdr['NAXIS'] = 3
-nhi_hdr['NAXIS3'] = 4
-fits.writeto("/Volumes/DataDavy/GALFA/DR2/DR2Vis/allsky_rgba_blended_over_nhi_gray.fits", allskyvis, header=nhi_hdr)
+
+def convert_to_fits_file():    
+    allskyvis = np.load('/Volumes/DataDavy/GALFA/DR2/DR2Vis/allsky_rgba_blended_over_nhi_gray.npy')
+    nhidata_fn = "/Volumes/DataDavy/GALFA/DR2/NHIMaps/GALFA-HI_VLSR-036+0037kms_NHImap_noTcut.fits"
+    nhi_hdr = fits.getheader(nhidata_fn)
+    nhi_hdr['NAXIS'] = 3
+    nhi_hdr['NAXIS3'] = 4
+    fits.writeto("/Volumes/DataDavy/GALFA/DR2/DR2Vis/allsky_rgba_blended_over_nhi_gray.fits", allskyvis, header=nhi_hdr)
 
 
 #if __name__ == "__main__":
@@ -293,10 +297,11 @@ fits.writeto("/Volumes/DataDavy/GALFA/DR2/DR2Vis/allsky_rgba_blended_over_nhi_gr
 #    
 #    np.save("allsky_rgba_blended_test1.npy", blended_data)
 
-"""
+
 if __name__ == "__main__":
     all_ggs, mom1cube, nhidata = maketestdata(local = False, smallpatch = False)
-    blended_data = np.load("allsky_rgba_blended_test1.npy")
+    #blended_data = np.load("allsky_rgba_blended_test1.npy")
+    blended_data = blendall(all_ggs)
     
     nhinoz = copy.copy(nhidata)
     nhinoz[np.where(nhidata == 0)] = None
@@ -304,5 +309,12 @@ if __name__ == "__main__":
     
     overc = painting_op(blended_data, nhirgba)
     
-    np.save("allsky_rgba_blended_over_nhi_gray.npy", overc)
-"""
+    np.save("allsky_rgba_blended_over_nhi_gray_new.npy", overc)
+    
+    nhidata_fn = "/disks/jansky/a/users/goldston/zheng/151019_NHImaps_SRcorr/data/GNHImaps/GALFA-HI_VLSR-036+0037kms_NHImap_noTcut.fits"
+    nhi_hdr = fits.getheader(nhidata_fn)
+    nhi_hdr['NAXIS'] = 3
+    nhi_hdr['NAXIS3'] = 4
+    fits.writeto("allsky_rgba_blended_over_nhi_gray_new.fits", overc, header=nhi_hdr)
+
+
