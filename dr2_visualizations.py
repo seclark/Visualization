@@ -17,15 +17,7 @@ import colorsys
 import matplotlib as mpl
 import matplotlib.colors as colors
 
-def maketestdata(local=True, smallpatch=True):
-    if local is True:
-        path = "/Volumes/DataDavy/GALFA/DR2/FullSkyRHT/QUmaps/"
-        nhidata_fn = "/Volumes/DataDavy/GALFA/DR2/NHIMaps/GALFA-HI_VLSR-036+0037kms_NHImap_noTcut.fits"
-    else:
-        path = "/disks/jansky/a/users/goldston/susan/Wide_maps/single_theta_maps/"
-        nhidata_fn = "/disks/jansky/a/users/goldston/zheng/151019_NHImaps_SRcorr/data/GNHImaps/GALFA-HI_VLSR-036+0037kms_NHImap_noTcut.fits"
-    
-    nhidata = fits.getdata(nhidata_fn)
+def maketestdata(local=True, smallpatch=True, nhidata):
 
     vstep = 0.736122839600 # CDELT3 of original Wide cube
     vstart = -35.4 # km/s vel of channel 0974
@@ -72,13 +64,26 @@ def maketestdata(local=True, smallpatch=True):
         #all_ggs_big[:, :, i] = all_ggs_big_slice
         #mom1cube_big[:, :, i] = all_ggs_big[:, :, i]*vels[i]
     
-        # testing.
-        if smallpatch:
-            nhidata = nhidata[:, 0:2432]
-        nhidata = nhidata/np.nanmax(nhidata)
-    
     print(vels)    
     return all_ggs, mom1cube, nhidata#, all_ggs_big, mom1cube_big
+
+def get_nhidata(local=False, smallpatch=False, nhimap='-90_90'):
+    if local is True:
+        nhidata_fn = "/Volumes/DataDavy/GALFA/DR2/NHIMaps/GALFA-HI_VLSR-036+0037kms_NHImap_noTcut.fits"
+    else:
+        if nhimap is '-90_90':
+            nhidata_fn = 
+        elif nhimap is '-36_37':
+            nhidata_fn = "/disks/jansky/a/users/goldston/zheng/151019_NHImaps_SRcorr/data/GNHImaps/GALFA-HI_VLSR-036+0037kms_NHImap_noTcut.fits"
+    
+    nhidata = fits.getdata(nhidata_fn)
+    nhihdr = fits.getheader(nhidata_fn)
+    
+    if smallpatch:
+        nhidata = nhidata[:, 0:2432]
+    nhidata = nhidata/np.nanmax(nhidata)
+    
+    return nhidata, nhihdr
 
 def renormalize(data, minval, maxval):
 
@@ -131,7 +136,7 @@ def test_chans(data):
 
     return datargba
     
-def testblend(data):
+def testblend(data, cmap='spectral'):
     
     cmap = 'spectral'
     (nx, ny, nz) = data.shape
@@ -161,10 +166,9 @@ def blend(slice1, slice2):
     
     return outA, outRGBA
     
-def blendall(data):
+def blendall(data, cmap='spectral'):
     (nx, ny, nz) = data.shape
     
-    cmap = 'spectral'
     datargba = np.zeros((data.shape[0], data.shape[1], 4), np.float_)
     
     blendme = np.zeros(datargba.shape)
@@ -297,24 +301,39 @@ def convert_to_fits_file():
 #    
 #    np.save("allsky_rgba_blended_test1.npy", blended_data)
 
-
-if __name__ == "__main__":
-    all_ggs, mom1cube, nhidata = maketestdata(local = False, smallpatch = False)
-    #blended_data = np.load("allsky_rgba_blended_test1.npy")
-    blended_data = blendall(all_ggs)
+def make_RGBA_map(local=False, smallpatch=False, cmap='spectral', nhimap='-90_90', lognhi=True):
+    """
+    return RGBA map of backprojections overlaid on NHI
+    cmap : colorcoding for backprojection velocities
+    nhimap : '-90_90' or '-36_37'
+    """
+    
+    all_ggs, mom1cube, nhidata = maketestdata(local=local, smallpatch=smallpatch, lognhi=lognhi)
+    nhidata, nhihdr = get_nhidata(local=local, smallpatch=smallpatch, nhimap=nhimap)
+    
+    cmap="Spectral" # note there is a difference between 'spectral' and 'Spectral'
+    blended_data = blendall(all_ggs, cmap=cmap)
     
     nhinoz = copy.copy(nhidata)
     nhinoz[np.where(nhidata == 0)] = None
+    if lognhi:
+        print('taking log of nhi data')
+        nhinoz = np.log10(nhinoz)
     nhirgba = plt.cm.gray(nhinoz/np.nanmax(nhinoz))
     
     overc = painting_op(blended_data, nhirgba)
     
-    np.save("allsky_rgba_blended_over_nhi_gray_new.npy", overc)
+    return overc, nhihdr
+
+
+if __name__ == "__main__":
     
-    nhidata_fn = "/disks/jansky/a/users/goldston/zheng/151019_NHImaps_SRcorr/data/GNHImaps/GALFA-HI_VLSR-036+0037kms_NHImap_noTcut.fits"
-    nhi_hdr = fits.getheader(nhidata_fn)
+    overc, nhi_hdr = make_RGBA_map(local=False, smallpatch=False, cmap='Spectral', nhimap='-90_90', lognhi=True)
+    
+    rgba_fn = "allsky_rgba_"+cmap+"_blended_over_nhi_"+nhimap+"_gray_new.fits"
+    
     nhi_hdr['NAXIS'] = 3
     nhi_hdr['NAXIS3'] = 4
-    fits.writeto("allsky_rgba_blended_over_nhi_gray_new.fits", overc, header=nhi_hdr)
+    fits.writeto(rgba_fn, overc, header=nhi_hdr)
 
 
