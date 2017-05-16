@@ -17,7 +17,7 @@ import colorsys
 import matplotlib as mpl
 import matplotlib.colors as colors
 
-def maketestdata(local=True, smallpatch=True, nhidata):
+def maketestdata(nhidata, local=True, smallpatch=True):
 
     vstep = 0.736122839600 # CDELT3 of original Wide cube
     vstart = -35.4 # km/s vel of channel 0974
@@ -308,8 +308,8 @@ def make_RGBA_map(local=False, smallpatch=False, cmap='spectral', nhimap='-90_90
     nhimap : '-90_90' or '-36_37'
     """
     
-    all_ggs, mom1cube, nhidata = maketestdata(local=local, smallpatch=smallpatch, lognhi=lognhi)
     nhidata, nhihdr = get_nhidata(local=local, smallpatch=smallpatch, nhimap=nhimap)
+    all_ggs, mom1cube, nhidata = maketestdata(nhidata, local=local, smallpatch=smallpatch)
     
     cmap="Spectral" # note there is a difference between 'spectral' and 'Spectral'
     blended_data = blendall(all_ggs, cmap=cmap)
