@@ -19,6 +19,11 @@ import matplotlib.colors as colors
 
 def maketestdata(nhidata, local=True, smallpatch=True):
 
+    if local is True:
+        path = "/Volumes/DataDavy/GALFA/DR2/FullSkyRHT/QUmaps/"
+    else:
+        path = "/disks/jansky/a/users/goldston/susan/Wide_maps/single_theta_maps/"
+        
     vstep = 0.736122839600 # CDELT3 of original Wide cube
     vstart = -35.4 # km/s vel of channel 0974
     vels = np.zeros(21, np.float_)
@@ -71,10 +76,9 @@ def get_nhidata(local=False, smallpatch=False, nhimap='-90_90'):
     if local is True:
         nhidata_fn = "/Volumes/DataDavy/GALFA/DR2/NHIMaps/GALFA-HI_VLSR-036+0037kms_NHImap_noTcut.fits"
     else:
-        print(nhimap)
         if nhimap == '-90_90':
             nhidata_fn = "/disks/jansky/a/users/goldston/susan/Wide_maps/GALFA-HI_NHI_VLSR-90+90kms_STRCORR.fits"
-        elif nhimap is '-36_37':
+        elif nhimap == '-36_37':
             nhidata_fn = "/disks/jansky/a/users/goldston/zheng/151019_NHImaps_SRcorr/data/GNHImaps/GALFA-HI_VLSR-036+0037kms_NHImap_noTcut.fits"
     
     nhidata = fits.getdata(nhidata_fn)
