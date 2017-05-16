@@ -77,7 +77,8 @@ def get_nhidata(local=False, smallpatch=False, nhimap='-90_90'):
         nhidata_fn = "/Volumes/DataDavy/GALFA/DR2/NHIMaps/GALFA-HI_VLSR-036+0037kms_NHImap_noTcut.fits"
     else:
         if nhimap == '-90_90':
-            nhidata_fn = "/disks/jansky/a/users/goldston/susan/Wide_maps/GALFA-HI_NHI_VLSR-90+90kms_STRCORR.fits"
+            #nhidata_fn = "/disks/jansky/a/users/goldston/susan/Wide_maps/GALFA-HI_NHI_VLSR-90+90kms_STRCORR.fits"
+            nhidata_fn = "/disks/jansky/a/users/goldston/zheng/151019_NHImaps_SRcorr/data/GNHImaps_SRcorr/GALFA-HI_NHI_VLSR-90+90kms_STRCORR.fits"
         elif nhimap == '-36_37':
             nhidata_fn = "/disks/jansky/a/users/goldston/zheng/151019_NHImaps_SRcorr/data/GNHImaps/GALFA-HI_VLSR-036+0037kms_NHImap_noTcut.fits"
     
@@ -333,7 +334,10 @@ def make_RGBA_map(local=False, smallpatch=False, cmap='spectral', nhimap='-90_90
 
 if __name__ == "__main__":
     
-    overc, nhi_hdr = make_RGBA_map(local=False, smallpatch=False, cmap='Spectral', nhimap='-90_90', lognhi=True)
+    cmap = 'Spectral'
+    nhimap='-90_90'
+    
+    overc, nhi_hdr = make_RGBA_map(local=False, smallpatch=False, cmap=cmap, nhimap=nhimap, lognhi=True)
     
     rgba_fn = "allsky_rgba_"+cmap+"_blended_over_nhi_"+nhimap+"_gray_new.fits"
     
