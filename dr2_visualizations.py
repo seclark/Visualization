@@ -72,7 +72,7 @@ def get_nhidata(local=False, smallpatch=False, nhimap='-90_90'):
         nhidata_fn = "/Volumes/DataDavy/GALFA/DR2/NHIMaps/GALFA-HI_VLSR-036+0037kms_NHImap_noTcut.fits"
     else:
         if nhimap is '-90_90':
-            nhidata_fn = 
+            nhidata_fn = "/disks/jansky/a/users/goldston/susan/Wide_maps/GALFA-HI_NHI_VLSR-90+90kms_STRCORR.fits"
         elif nhimap is '-36_37':
             nhidata_fn = "/disks/jansky/a/users/goldston/zheng/151019_NHImaps_SRcorr/data/GNHImaps/GALFA-HI_VLSR-036+0037kms_NHImap_noTcut.fits"
     
