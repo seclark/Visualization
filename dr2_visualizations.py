@@ -329,7 +329,7 @@ def make_RGBA_map(local=False, smallpatch=False, cmap='spectral', nhimap='-90_90
     
     overc = painting_op(blended_data, nhirgba)
     
-    return overc, nhihdr
+    return overc, nhihdr, blended_data
 
 
 if __name__ == "__main__":
@@ -337,12 +337,15 @@ if __name__ == "__main__":
     cmap = 'Spectral'
     nhimap='-90_90'
     
-    overc, nhi_hdr = make_RGBA_map(local=False, smallpatch=False, cmap=cmap, nhimap=nhimap, lognhi=True)
+    overc, nhi_hdr, blended_data = make_RGBA_map(local=False, smallpatch=False, cmap=cmap, nhimap=nhimap, lognhi=True)
     
+    rgba_fn_nobackground = "allsky_rgba_"+cmap+"_noblend.fits"
     rgba_fn = "allsky_rgba_"+cmap+"_blended_over_nhi_"+nhimap+"_gray_new.fits"
     
     nhi_hdr['NAXIS'] = 3
     nhi_hdr['NAXIS3'] = 4
-    fits.writeto(rgba_fn, overc, header=nhi_hdr)
+    #fits.writeto(rgba_fn, overc, header=nhi_hdr)
+    
+    fits.writeto(rgba_fn_nobackground, blended_data, header=nhi_hdr)
 
 
